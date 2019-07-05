@@ -1,0 +1,40 @@
+{
+  "name": "NPMSetup",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:setup": "mkdir -p dist/css && mkdir -p dist/js && mkdir -p assets/styles && mkdir -p assets/js && touch assets/styles/variables.styl && touch assets/styles/main.styl && touch assets/js/main.js",
+    "build:cssdev": "stylus -c -u autoprefixer-stylus assets/styles/main.styl -m -o dist/css/styles.min.css",
+    "build:cssprod": "stylus -c -u autoprefixer-stylus assets/styles/main.styl -o dist/css/styles.min.css",
+    "build:jsprod": "webpack --mode production ./assets/js/main.js --presets --output ./dist/js/main.js --module-bind js=babel-loader",
+    "build:jsdev": "webpack --mode development ./assets/js/main.js --presets --output ./dist/js/main.js --module-bind js=babel-loader",
+    "watch:cssdev": "onchange 'assets/styles/**/*.styl' -- npm run build:cssdev",
+    "watch:cssprod": "onchange 'assets/styles/**/*.styl' -- npm run build:cssprod",
+    "watch:jsdev": "onchange 'assets/js/**/*.js' -- npm run build:jsdev",
+    "watch:jsprod": "onchange 'assets/js/**/*.js' -- npm run build:jsprod",
+    "watch:dev": "parallelshell 'npm run watch:cssdev' 'npm run watch:jsdev' 'npm run serve'",
+    "watch:prod": "parallelshell 'npm run watch:cssprod' 'npm run watch:jsprod' 'npm run serve'",
+    "serve": "browser-sync start --proxy ${url} --files 'dist/**/*.css, dist/**/*.js' -w",
+    "postinstall": "npm run build:setup",
+    "eject": "react-scripts eject"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "autoprefixer-stylus": "latest",
+    "babel-loader": "^8.0.5",
+    "browser-sync": "latest",
+    "onchange": "latest",
+    "package.json": "latest",
+    "parallelshell": "^3.0.1",
+    "stylus": "latest",
+    "three": "latest",
+    "three-mtl-loader": "latest",
+    "three-obj-loader": "latest",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.2.1"
+  }
+}
