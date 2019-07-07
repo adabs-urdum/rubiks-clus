@@ -4,6 +4,18 @@
 // mouth 103 --> 0.1129385965
 // torso 518 --> 0.5679824561
 
+Array.prototype.shuffle = function() {
+  var i = this.length, j, temp;
+  if ( i == 0 ) return this;
+  while ( --i ) {
+     j = Math.floor( Math.random() * ( i + 1 ) );
+     temp = this[i];
+     this[i] = this[j];
+     this[j] = temp;
+  }
+  return this;
+}
+
 function WebGLThreeJS(){
   let scene,
       camera,
@@ -26,7 +38,11 @@ function WebGLThreeJS(){
       runInitAnimation,
       runRandomAnimation,
       randomButton,
-      domContainer;
+      domContainer,
+      domContainerXmin,
+      domContainerXmax,
+      domContainerYmin,
+      domContainerYmax;
 
   const THREE = require('three');
 
@@ -93,7 +109,7 @@ function WebGLThreeJS(){
       {
         name: 'yanik',
       }
-    ];
+    ].shuffle();
 
     path = '/dist/img/team/';
 
@@ -123,8 +139,18 @@ function WebGLThreeJS(){
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 250);
-    camera.position.set(0,0,3);
+    camera.position.set(0,0.2,3);
     camera.lookAt( 0,-0.3,0 );
+
+    if(window.innerWidth <= 768){
+      camera.position.z = 4;
+    }
+    else if(window.innerWidth >= 768){
+      camera.position.z = 3.5;
+    }
+    else if(window.innerWidth >= 1024){
+      camera.position.z = 3;
+    }
 
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
@@ -278,6 +304,7 @@ function WebGLThreeJS(){
     domContainer.addEventListener('mouseup', onMouseUp);
     domContainer.addEventListener('touchend', onTouchUp);
     randomButton.addEventListener('click', () => {runRandomAnimation = true; });
+    window.addEventListener('resize', resizeRenderer);
   }
 
   function onMouseDown(e){
@@ -503,10 +530,22 @@ function WebGLThreeJS(){
     });
   }
 
+  function resetdomContainerSizes(){
+      const domContainerRect = domContainer.getBoundingClientRect();
+      domContainerXmin = domContainerRect.left;
+      domContainerXmax = domContainerRect.right;
+      domContainerYmin = domContainerRect.top;
+      domContainerYmax = domContainerRect.bottom;
+    }
+
   function resizeRenderer(){
-    camera.aspect = window.innerWidth / window.innerHeight;
+    if(window.innerWidth <= 768){
+      camera.position.z = 4;
+    }
+    resetdomContainerSizes();
+    camera.aspect = domContainer.offsetWidth / domContainer.offsetHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(domContainer.offsetWidth, domContainer.offsetHeight);
   }
 
   function initialAnimation(){

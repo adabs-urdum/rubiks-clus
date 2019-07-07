@@ -2,7 +2,11 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at center, #fff, #FF6464);
+  background: radial-gradient(ellipse at bottom center, #999 0%, transparent 50%);
+  background-size: 90% 8%;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  overflow: hidden;
   &__button
     position: absolute;
     bottom: BS * 100;
@@ -26,8 +30,22 @@
     width: BS * 100;
   &__svg
     position: absolute;
-    top: 49%;
+    top: 50%;
     left: 50%;
     width: 100%;
     height: 100%;
     transform: translate(-50%, -50%);
+
+
+@media BreakpointL
+  .rubiks
+    &__button
+      width: 120px;
+      height: 120px;
+
+
+@media BreakpointXS
+  .rubiks
+    &__button
+      width: BS * 250;
+      height: BS * 250;
