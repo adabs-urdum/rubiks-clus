@@ -22,11 +22,11 @@ function WebGLThreeJS(){
       parts,
       path,
       currentPerson,
-      rotationSpeed,
-      rotationPosition,
-      closestRotationDegree,
       floatingDirection,
-      runInitAnimation;
+      runInitAnimation,
+      runRandomAnimation,
+      randomButton,
+      domContainer;
 
   const THREE = require('three');
 
@@ -35,7 +35,6 @@ function WebGLThreeJS(){
     setVars();
     bindEvents();
     addParts();
-    initialAnimation();
     mainLoop();
 
   }
@@ -46,6 +45,8 @@ function WebGLThreeJS(){
     closestRotation = 0;
     floatingTotal = 0;
     floatingDirection = true;
+    runRandomAnimation = false;
+    randomButton = document.getElementById('randomButton');
 
     rotationPoints = [
       0,
@@ -207,7 +208,7 @@ function WebGLThreeJS(){
           flatShading: false,
           color: 0xffffff,
           map: loader.load(path + person.name + '_' + part.name + '.jpg'),
-        })
+        });
       }));
 
       cubeGeometry.materials = materials;
@@ -251,7 +252,7 @@ function WebGLThreeJS(){
       mesh.material.needsUpdate = true;
 
       mesh.rotationSpeed = (Math.random() - 0.5) / 1000;
-      mesh.rotationPosition = (Math.random() - 0.5) / 10000;
+      mesh.rotationPosition = (Math.random() - 0.5) / 100;
 
       mesh.difference = 0;
       mesh.closestRotation = 0;
@@ -276,6 +277,7 @@ function WebGLThreeJS(){
     domContainer.addEventListener('touchstart', onTouchDown);
     domContainer.addEventListener('mouseup', onMouseUp);
     domContainer.addEventListener('touchend', onTouchUp);
+    randomButton.addEventListener('click', () => {runRandomAnimation = true; });
   }
 
   function onMouseDown(e){
@@ -387,6 +389,41 @@ function WebGLThreeJS(){
 
   }
 
+  function setNewFaceAll(){
+
+    clickables.map(clickable => {
+
+      clickable.geometry.groupsNeedUpdate = true;
+      clickable.turn = clickable.closestRotationDegree / 90;
+
+      clickable.currentMaterialIndex += 1;
+      if(clickable.currentMaterialIndex > clickable.material.length - 1){
+        clickable.currentMaterialIndex = 1;
+      }
+
+      const steps = {
+        '0': [10,11],
+        '1': [0,1],
+        '2': [8,9],
+        '3': [2,3],
+        '4': [10,11],
+        '-1': [2,3],
+        '-2': [8,9],
+        '-3': [0,1],
+        '-4': [10,11]
+      };
+
+      const faceKeys = steps[clickable.turn];
+
+      faceKeys.map(faceKey => {
+        clickable.geometry.faces[faceKey].materialIndex = clickable.currentMaterialIndex;
+      });
+      clickable.geometry.groupsNeedUpdate = true;
+
+    });
+
+  }
+
   function setClosest(){
     clickables.map(clickable => {
       clickable.rotation.y = clickable.rotation.y;
@@ -442,14 +479,28 @@ function WebGLThreeJS(){
   }
 
   function resetCurrentRotation(){
-    currentTarget.rotation.y = currentTarget.rotation.y;
     if(currentTarget.rotation.y <= (Math.PI * -2)){
       currentTarget.rotation.y = currentTarget.rotation.y + (Math.PI * 2);
+      currentTarget.rotationPosition = currentTarget.rotation.y;
     }
     else if(currentTarget.rotation.y >= (Math.PI * 2)){
       currentTarget.rotation.y = currentTarget.rotation.y + (Math.PI * -2);
+      currentTarget.rotationPosition = currentTarget.rotation.y;
     }
 
+  }
+
+  function resetRotationAll(){
+    clickables.map(clickable => {
+      if(clickable.rotation.y <= (Math.PI * -2)){
+        clickable.rotation.y = clickable.rotation.y + (Math.PI * 2);
+        clickable.rotationPosition = clickable.rotation.y;
+      }
+      else if(clickable.rotation.y >= (Math.PI * 2)){
+        clickable.rotation.y = clickable.rotation.y + (Math.PI * -2);
+        clickable.rotationPosition = clickable.rotation.y;
+      }
+    });
   }
 
   function resizeRenderer(){
@@ -460,14 +511,30 @@ function WebGLThreeJS(){
 
   function initialAnimation(){
     clickables.map(clickable => {
-      clickable.rotationPosition += clickable.rotationSpeed;
+      clickable.rotationPosition += clickable.rotationSpeed * 2,7 * Math.random();
       clickable.rotation.y += (Math.sin(clickable.rotationPosition));
       window.setTimeout(()=>{
         runInitAnimation = false;
         runEasing = false;
         setClosest();
         fitAll();
-      }, 1000);
+      }, 500);
+    });
+  }
+
+  function randomAnimation(){
+    clickables.map(clickable => {
+      clickable.rotationPosition += clickable.rotationSpeed * Math.PI * 2;
+      clickable.rotation.y += (Math.sin(clickable.rotationPosition));
+      resetCurrentRotation();
+      window.setTimeout(()=>{
+        runRandomAnimation = false;
+        runEasing = false;
+        setClosest();
+        resetRotationAll();
+        fitAll();
+        setNewFaceAll();
+      }, 500);
     });
   }
 
@@ -502,6 +569,10 @@ function WebGLThreeJS(){
 
     if(runInitAnimation){
       initialAnimation();
+    }
+
+    if(runRandomAnimation){
+      randomAnimation();
     }
 
     // float();
