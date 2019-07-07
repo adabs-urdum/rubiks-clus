@@ -15,15 +15,18 @@ function WebGLThreeJS(){
       currentTarget,
       xClicked,
       yClicked,
-      shadowHelper,
       floatingTotal,
       people,
       closestRotation,
       currentRotation,
       parts,
-      currentBackside,
       path,
-      currentPerson;
+      currentPerson,
+      rotationSpeed,
+      rotationPosition,
+      closestRotationDegree,
+      floatingDirection,
+      runInitAnimation;
 
   const THREE = require('three');
 
@@ -32,6 +35,7 @@ function WebGLThreeJS(){
     setVars();
     bindEvents();
     addParts();
+    initialAnimation();
     mainLoop();
 
   }
@@ -40,7 +44,6 @@ function WebGLThreeJS(){
 
     currentRotation = 0;
     closestRotation = 0;
-    closestRotationDegree = closestRotation * 180 / Math.PI;
     floatingTotal = 0;
     floatingDirection = true;
 
@@ -56,6 +59,8 @@ function WebGLThreeJS(){
       Math.PI * -2 // -360deg
     ];
     runEasing = true;
+
+    runInitAnimation = true;
 
     currentPerson = 4;
 
@@ -95,7 +100,7 @@ function WebGLThreeJS(){
       {
         name: 'top',
         height: 0.2192982456,
-        posY: 0.135
+        posY: 0.135,
       },
       {
         name: 'eyes',
@@ -241,9 +246,18 @@ function WebGLThreeJS(){
       mesh.geometry.dynamic = true;
       mesh.geometry.computeVertexNormals();
 
-      currentMaterialIndex = 4;
+      mesh.currentMaterialIndex = 4;
 
       mesh.material.needsUpdate = true;
+
+      mesh.rotationSpeed = (Math.random() - 0.5) / 1000;
+      mesh.rotationPosition = (Math.random() - 0.5) / 10000;
+
+      mesh.difference = 0;
+      mesh.closestRotation = 0;
+      mesh.currentRotation = 0;
+
+      mesh.closestRotationDegree = closestRotation * 180 / Math.PI;
 
       // mesh.receiveShadow = true;
       // mesh.castShadow = true;
@@ -343,75 +357,118 @@ function WebGLThreeJS(){
   }
 
   function setNewFace(){
-    currentTarget.geometry.groupsNeedUpdate = true;
-    let turn = closestRotationDegree / 90 < 0 ? closestRotationDegree / -90 : closestRotationDegree / 90;
-    if(turn == 0){turn = 1}
 
-    currentMaterialIndex += 1;
-    if(currentMaterialIndex > currentTarget.material.length - 1){
-      currentMaterialIndex = 1;
+    currentTarget.geometry.groupsNeedUpdate = true;
+    currentTarget.turn = currentTarget.closestRotationDegree / 90;
+
+    currentTarget.currentMaterialIndex += 1;
+    if(currentTarget.currentMaterialIndex > currentTarget.material.length - 1){
+      currentTarget.currentMaterialIndex = 1;
     }
 
     const steps = {
-      1: [10,11],
-      2: [8,9],
-      3: [2,3],
-      4: [0,1]
+      '0': [10,11],
+      '1': [0,1],
+      '2': [8,9],
+      '3': [2,3],
+      '4': [10,11],
+      '-1': [2,3],
+      '-2': [8,9],
+      '-3': [0,1],
+      '-4': [10,11]
     };
 
-    const faceKeys = steps[turn];
+    const faceKeys = steps[currentTarget.turn];
 
     faceKeys.map(faceKey => {
-      currentTarget.geometry.faces[faceKey].materialIndex = currentMaterialIndex;
+      currentTarget.geometry.faces[faceKey].materialIndex = currentTarget.currentMaterialIndex;
     });
     currentTarget.geometry.groupsNeedUpdate = true;
 
   }
 
   function setClosest(){
-    currentRotation = (currentTarget.rotation.y);
-    closestRotation = rotationPoints.reduce(function(prev, curr) {
-      return (Math.abs(curr - currentRotation) < Math.abs(prev - currentRotation) ? curr : prev);
+    clickables.map(clickable => {
+      clickable.rotation.y = clickable.rotation.y;
+      clickable.closestRotation = rotationPoints.reduce(function(prev, curr) {
+        return (Math.abs(curr - clickable.rotation.y) < Math.abs(prev - clickable.rotation.y) ? curr : prev);
+      });
+      clickable.closestRotationDegree = clickable.closestRotation * 180 / Math.PI;
     });
-    closestRotationDegree = closestRotation * 180 / Math.PI;
   }
 
   function fitCurrent(){
-    const difference = (closestRotation - currentRotation);
-    if(difference >= 0.008 || difference <= -0.008){
-      if(difference > 1 || difference < -0.1){
-        currentTarget.rotation.y += difference * 0.1;
+    currentTarget.difference = currentTarget.closestRotation - currentTarget.rotation.y;
+    if(currentTarget.difference >= 0.008 || currentTarget.difference <= -0.008){
+      if(currentTarget.difference > 1 || currentTarget.difference < -0.1){
+        currentTarget.rotation.y += currentTarget.difference * 0.1;
       }
-      else if(difference > 0.01 || difference < -0.01){
-        currentTarget.rotation.y += difference * 0.071;
+      else if(currentTarget.difference > 0.01 || currentTarget.difference < -0.01){
+        currentTarget.rotation.y += currentTarget.difference * 0.071;
       }
-      else if(difference <= 0.01 || difference >= -0.01){
-        currentTarget.rotation.y += difference * 0.061;
+      else if(currentTarget.difference <= 0.01 || currentTarget.difference >= -0.01){
+        currentTarget.rotation.y += currentTarget.difference * 0.061;
       }
     }
     else{
       runEasing = false;
+      resetCurrentRotation();
+      setClosest();
       setNewFace();
     }
-    currentRotation = (currentTarget.rotation.y);
+  }
+
+  function fitAll(){
+    clickables.map(clickable => {
+      clickable.difference = (clickable.closestRotation - clickable.rotation.y);
+      if(clickable.difference >= 0.008 || clickable.difference <= -0.008){
+        if(clickable.difference > 1 || clickable.difference < -0.1){
+          clickable.rotation.y += clickable.difference * 0.1;
+        }
+        else if(clickable.difference > 0.01 || clickable.difference < -0.01){
+          clickable.rotation.y += clickable.difference * 0.071;
+        }
+        else if(clickable.difference <= 0.01 || clickable.difference >= -0.01){
+          clickable.rotation.y += clickable.difference * 0.061;
+        }
+      }
+      else{
+        runEasing = false;
+        resetCurrentRotation();
+        setClosest();
+        setNewFace();
+      }
+    });
   }
 
   function resetCurrentRotation(){
-    currentRotation = currentTarget.rotation.y;
-    if(currentRotation <= (Math.PI * -2)){
-      currentTarget.rotation.y = currentRotation + (Math.PI * 2);
-      currentRotation = (currentTarget.rotation.y);
+    currentTarget.rotation.y = currentTarget.rotation.y;
+    if(currentTarget.rotation.y <= (Math.PI * -2)){
+      currentTarget.rotation.y = currentTarget.rotation.y + (Math.PI * 2);
     }
-    else if(currentRotation >= (Math.PI * 2)){
-      currentTarget.rotation.y = currentRotation + (Math.PI * -2);
-      currentRotation = (currentTarget.rotation.y);
+    else if(currentTarget.rotation.y >= (Math.PI * 2)){
+      currentTarget.rotation.y = currentTarget.rotation.y + (Math.PI * -2);
     }
+
   }
 
   function resizeRenderer(){
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function initialAnimation(){
+    clickables.map(clickable => {
+      clickable.rotationPosition += clickable.rotationSpeed;
+      clickable.rotation.y += (Math.sin(clickable.rotationPosition));
+      window.setTimeout(()=>{
+        runInitAnimation = false;
+        runEasing = false;
+        setClosest();
+        fitAll();
+      }, 1000);
+    });
   }
 
   function float(){
@@ -438,9 +495,15 @@ function WebGLThreeJS(){
 
   function mainLoop(){
     renderer.render(scene, camera);
+
     if(runEasing){
       fitCurrent();
     }
+
+    if(runInitAnimation){
+      initialAnimation();
+    }
+
     // float();
     requestAnimationFrame(mainLoop);
   }
