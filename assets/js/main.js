@@ -49,7 +49,8 @@ function WebGLThreeJS(){
       runEasing,
       hemisphereLight,
       directionalLight,
-      pointLight;
+      pointLight,
+      photoButton;
 
   const THREE = require('three');
 
@@ -70,6 +71,8 @@ function WebGLThreeJS(){
     floatingDirection = true;
     runRandomAnimation = false;
     randomButton = document.getElementById('randomButton');
+    photoButton = document.getElementById('photoButton');
+    domContainer = document.getElementsByClassName('rubiks')[0];
 
     rotationPoints = [
       0,
@@ -145,7 +148,7 @@ function WebGLThreeJS(){
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 250);
+    camera = new THREE.PerspectiveCamera(30, domContainer.offsetWidth / domContainer.offsetHeight, 1, 250);
     camera.position.set(0,0.2,3);
     camera.lookAt( 0,-0.3,0 );
 
@@ -166,8 +169,6 @@ function WebGLThreeJS(){
 
     setLights();
 
-    domContainer = document.getElementsByClassName('rubiks')[0];
-
     setRenderer();
 
     domContainer.appendChild(renderer.domElement);
@@ -178,17 +179,8 @@ function WebGLThreeJS(){
     renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
+      preserveDrawingBuffer: true ,
     });
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMapSoft = true;
-    renderer.shadowCameraNear = 3;
-    renderer.shadowCameraFar = camera.far;
-    renderer.shadowCameraFov = 50;
-
-    renderer.shadowMapBias = 0.0039;
-    renderer.shadowMapDarkness = 0.5;
-    renderer.shadowMapWidth = 1024;
-    renderer.shadowMapHeight = 1024;
     renderer.setSize(domContainer.offsetWidth, domContainer.offsetHeight);
   }
 
@@ -201,19 +193,11 @@ function WebGLThreeJS(){
     directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
     directionalLight.position.set(0, 50, 0);
     directionalLight.target.position.set(0, 0, 0);
-    // directionalLight.castShadow = true;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 5000;
-    directionalLight.shadow.camera.left = -500;
-    directionalLight.shadow.camera.bottom = -500;
-    directionalLight.shadow.camera.right = 500;
-    directionalLight.shadow.camera.top = 500;
     scene.add(directionalLight);
 
     // PointLight( color : Integer, intensity : Float, distance : Number, decay : Float )
     pointLight = new THREE.PointLight(0xfff3f3, 0.3, 0, 2);
     pointLight.position.set(-2,0,2);
-    // pointLight.castShadow = true;
     scene.add(pointLight);
   }
 
@@ -287,9 +271,6 @@ function WebGLThreeJS(){
 
       mesh.closestRotationDegree = closestRotation * 180 / Math.PI;
 
-      // mesh.receiveShadow = true;
-      // mesh.castShadow = true;
-
       mesh.position.y += part.posY;
 
       currentTarget = mesh;
@@ -305,7 +286,36 @@ function WebGLThreeJS(){
     domContainer.addEventListener('mouseup', onMouseUp);
     domContainer.addEventListener('touchend', onTouchUp);
     randomButton.addEventListener('click', () => {runRandomAnimation = true; });
+    photoButton.addEventListener('click', saveAsImage);
     window.addEventListener('resize', resizeRenderer);
+  }
+
+  function saveAsImage(e){
+    const resizedCanvas = document.createElement('canvas');
+    const resizedContext = resizedCanvas.getContext('2d');
+    const resizedRenderer = renderer;
+
+    resizedCanvas.height = '1024';
+    resizedCanvas.width = '1024';
+
+    const resizedCamera = new THREE.PerspectiveCamera(30, resizedCanvas.width / resizedCanvas.height, 1, 250);
+    resizedCamera.position.set(0,0.2,2.45);
+    resizedCamera.lookAt( 0,-0.35,0 );
+    resizedRenderer.render(scene, resizedCamera);
+
+    const canvas = resizedRenderer.domElement;
+    const context = canvas.getContext('2d');
+
+    resizedContext.drawImage(canvas, 0, 0, 1024, 1024);
+
+    // For screenshots to work with WebGL renderer, preserveDrawingBuffer should be set to true.
+    // open in new window like this
+    var w = window.open('', '');
+    w.document.title = 'Screenshot';
+    //w.document.body.style.backgroundColor = "red";
+    var img = new Image();
+    img.src = resizedCanvas.toDataURL('image/png', 1.0);
+    w.document.body.appendChild(img);
   }
 
   function onMouseDown(e){
@@ -531,7 +541,7 @@ function WebGLThreeJS(){
     });
   }
 
-  function resetdomContainerSizes(){
+  function resetDomContainerSizes(){
       const domContainerRect = domContainer.getBoundingClientRect();
       domContainerXmin = domContainerRect.left;
       domContainerXmax = domContainerRect.right;
@@ -543,7 +553,7 @@ function WebGLThreeJS(){
     if(window.innerWidth <= 768){
       camera.position.z = 4;
     }
-    resetdomContainerSizes();
+    resetDomContainerSizes();
     camera.aspect = domContainer.offsetWidth / domContainer.offsetHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(domContainer.offsetWidth, domContainer.offsetHeight);

@@ -6,11 +6,12 @@
   background-size: 90% 8%;
   background-repeat: no-repeat;
   background-position: bottom center;
-  overflow: hidden;
-  &__button
+  overflow: visible;
+  &__buttons
     position: absolute;
     bottom: BS * 100;
     right: BS * 100;
+  &__button
     border-radius: 50%;
     border: solid BS*10 #000;
     width: BS * 120;
@@ -18,16 +19,22 @@
     background: White;
     cursor: pointer;
     transition: transform 0.1s ease-out;
+    transform-origin: center center;
     &:hover
       transform: scale(0.95);
     &:active
       transform: scale(1);
     &:focus
       outline: none;
+    &--photo
+      margin-right: BS * 40;
   &__svgwrapper
     position: relative;
   &__canvas
-    width: BS * 80;
+    &--random
+      width: BS * 60;
+    &--photo
+      width: BS * 75;
   &__svg
     position: absolute;
     top: 50%;
@@ -44,13 +51,42 @@
       height: 120px;
       border-width: 10px;
     &__canvas
-      width: 80px;
+      &--random
+        width: 60px;
+      &--photo
+        width: 75px;
 
+@media BreakpointM
+  .rubiks
+    &__button
+      width: BS * 200;
+      height: BS * 200;
+      border-width: BS * 15;
+    &__canvas
+      &--random
+        width: BS * 100;
+      &--photo
+        width: BS * 115;
+
+@media BreakpointS
+  .rubiks
+    height: 88vh;
+    &__button
+      width: BS * 350;
+      height: BS * 350;
+      border-width: BS * 25;
+      &--photo
+        margin-right: BS * 120;
+    &__canvas
+      &--random
+        width: BS * 190;
+      &--photo
+        width: BS * 200;
 
 @media BreakpointXS
   .rubiks
-    &__button
-      width: BS * 250;
-      height: BS * 250;
     &__canvas
-      width: BS * 200;
+      &--random
+        width: BS * 240;
+      &--photo
+        width: BS * 250;
