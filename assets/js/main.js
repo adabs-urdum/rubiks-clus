@@ -295,8 +295,8 @@ function WebGLThreeJS(){
     const resizedContext = resizedCanvas.getContext('2d');
     const resizedRenderer = renderer;
 
-    resizedCanvas.height = '1024';
-    resizedCanvas.width = '1024';
+    resizedCanvas.height = '512';
+    resizedCanvas.width = '512';
 
     const resizedCamera = new THREE.PerspectiveCamera(30, resizedCanvas.width / resizedCanvas.height, 1, 250);
     resizedCamera.position.set(0,0.2,2.45);
@@ -306,7 +306,7 @@ function WebGLThreeJS(){
     const canvas = resizedRenderer.domElement;
     const context = canvas.getContext('2d');
 
-    resizedContext.drawImage(canvas, 0, 0, 1024, 1024);
+    resizedContext.drawImage(canvas, 0, 0, 512, 512);
 
     const w = window.open('', '');
     w.document.title = 'Screenshot';
