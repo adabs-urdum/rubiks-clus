@@ -570,8 +570,10 @@ function WebGLThreeJS(){
   }
 
   function randomAnimation(){
+    const cos = Math.cos;
+    const sin = Math.sin;
     clickables.map(clickable => {
-      clickable.rotationPosition += clickable.rotationSpeed * Math.PI * 2;
+      clickable.rotationPosition += clickable.rotationSpeed * Math.PI * 1.97315123;
       clickable.rotation.y += (Math.sin(clickable.rotationPosition));
       resetCurrentRotation();
       window.setTimeout(()=>{
