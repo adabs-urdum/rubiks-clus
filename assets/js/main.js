@@ -29,14 +29,12 @@ function WebGLThreeJS(){
       currentTarget,
       xClicked,
       yClicked,
-      floatingTotal,
       people,
       closestRotation,
       currentRotation,
       parts,
       path,
       currentPerson,
-      floatingDirection,
       runInitAnimation,
       runRandomAnimation,
       randomButton,
@@ -67,8 +65,6 @@ function WebGLThreeJS(){
 
     currentRotation = 0;
     closestRotation = 0;
-    floatingTotal = 0;
-    floatingDirection = true;
     runRandomAnimation = false;
     randomButton = document.getElementById('randomButton');
     photoButton = document.getElementById('photoButton');
@@ -272,6 +268,8 @@ function WebGLThreeJS(){
       mesh.closestRotationDegree = closestRotation * 180 / Math.PI;
 
       mesh.position.y += part.posY;
+
+      mesh.angle = Math.random() - 0.5 * 1;
 
       currentTarget = mesh;
       clickables.push(mesh);
@@ -589,23 +587,13 @@ function WebGLThreeJS(){
 
   function float(){
     clickables.map(clickable => {
-      const amount = Math.random() / 2000;
-
-      if(floatingTotal < -0.05){
-        floatingDirection = true;
-      }
-      else if(floatingTotal > 0.05){
-        floatingDirection = false;
-      }
-
-      if(floatingDirection){
-        floatingTotal += amount;
-        clickable.position.y += amount;
-      }
-      else{
-        floatingTotal -= amount;
-        clickable.position.y -= amount;
-      }
+      clickable.angle += .02;
+      const cos = Math.cos;
+      const sin = Math.sin;
+      const tan = Math.tan;
+      clickable.position.x += cos(clickable.angle) * .0001;
+      clickable.position.y += sin(clickable.angle) * .000137;
+      clickable.position.z += sin(clickable.angle) * .00008371249;
     });
   }
 
@@ -624,7 +612,8 @@ function WebGLThreeJS(){
       randomAnimation();
     }
 
-    // float();
+    float();
+
     requestAnimationFrame(mainLoop);
   }
 
