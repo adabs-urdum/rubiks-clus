@@ -35,6 +35,7 @@
     "three-mtl-loader": "latest",
     "three-obj-loader": "latest",
     "webpack": "^4.29.0",
-    "webpack-cli": "^3.2.1"
+    "webpack-cli": "^3.2.1",
+    "bluebird": "latest"
   }
 }

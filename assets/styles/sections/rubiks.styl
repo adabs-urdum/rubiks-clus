@@ -27,7 +27,7 @@
   &__svgwrapper
     position: relative;
   &__canvas
-    width: BS * 100;
+    width: BS * 80;
   &__svg
     position: absolute;
     top: 50%;
@@ -37,11 +37,14 @@
     transform: translate(-50%, -50%);
 
 
-@media BreakpointL
+@media BreakpointMAX
   .rubiks
     &__button
       width: 120px;
       height: 120px;
+      border-width: 10px;
+    &__canvas
+      width: 80px;
 
 
 @media BreakpointXS
@@ -49,3 +52,5 @@
     &__button
       width: BS * 250;
       height: BS * 250;
+    &__canvas
+      width: BS * 200;

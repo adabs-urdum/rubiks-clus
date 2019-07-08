@@ -4,6 +4,8 @@
 // mouth 103 --> 0.1129385965
 // torso 518 --> 0.5679824561
 
+import {Promise} from 'bluebird';
+
 Array.prototype.shuffle = function() {
   var i = this.length, j, temp;
   if ( i == 0 ) return this;
@@ -42,7 +44,12 @@ function WebGLThreeJS(){
       domContainerXmin,
       domContainerXmax,
       domContainerYmin,
-      domContainerYmax;
+      domContainerYmax,
+      rotationPoints,
+      runEasing,
+      hemisphereLight,
+      directionalLight,
+      pointLight;
 
   const THREE = require('three');
 
@@ -204,16 +211,10 @@ function WebGLThreeJS(){
     scene.add(directionalLight);
 
     // PointLight( color : Integer, intensity : Float, distance : Number, decay : Float )
-    pointLight = new THREE.PointLight(0xffd9d9, 0.3, 0, 2);
+    pointLight = new THREE.PointLight(0xfff3f3, 0.3, 0, 2);
     pointLight.position.set(-2,0,2);
     // pointLight.castShadow = true;
-    // scene.add(pointLight);
-
-    // SpotLight( color : Integer, intensity : Float, distance : Float, angle : Radians, penumbra : Float, decay : Float )
-    spotLight = new THREE.SpotLight(0xffd9d9, 1, 10, 1, 1, 1);
-    spotLight.position.set(0,0.3,3);
-    // spotLight.castShadow = true;
-    // scene.add(spotLight);
+    scene.add(pointLight);
   }
 
   function addParts(){
