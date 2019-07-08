@@ -308,14 +308,13 @@ function WebGLThreeJS(){
 
     resizedContext.drawImage(canvas, 0, 0, 1024, 1024);
 
-    // For screenshots to work with WebGL renderer, preserveDrawingBuffer should be set to true.
-    // open in new window like this
-    var w = window.open('', '');
+    const w = window.open('', '');
     w.document.title = 'Screenshot';
-    //w.document.body.style.backgroundColor = "red";
-    var img = new Image();
+    const img = w.document.createElement('img');
     img.src = resizedCanvas.toDataURL('image/png', 1.0);
+
     w.document.body.appendChild(img);
+
   }
 
   function onMouseDown(e){
